@@ -1,70 +1,85 @@
-# Getting Started with Create React App
+# Redux Actions and Reducers Testing with Jest and Redux Mock Store
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This repository contains tests for Redux actions and reducers using Jest and Redux Mock Store. The main focus is on testing the following actions:
+- `showUser`
+- `deleteUser`
 
-## Available Scripts
+## Setting Up Mock Store
 
-In the project directory, you can run:
+The mock store is configured using `redux-mock-store` and `redux-thunk` middleware. The `jest-fetch-mock` package is used to mock fetch requests.
 
-### `npm start`
+```javascript
+import configureMockStore from 'redux-mock-store';
+import thunk from 'redux-thunk';
+import fetchMock from 'jest-fetch-mock';
+import { DELETE_USER, showUser, deleteUser } from '../Store/Action/UserAction';
+import { USER_SHOW } from '../Store/Action/UserAction';
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+const middlewares = [thunk];
+const mockStore = configureMockStore(middlewares);
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
 
-### `npm test`
+1. Testing Successful Fetching of Users (showUser)
+This test checks if the showUser action correctly dispatches the USER_SHOW action when the API call is successful.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+A mock response is provided to simulate a successful API call.
+The expected action with the fetched user data is compared against the actual dispatched actions.
 
-### `npm run build`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+describe('showUser', () => {
+  it('creates USER_SHOW when fetching users has been done', async () => {
+    const mockUsers = {
+      "id": 1,
+      "name": "Leanne Graham",
+      // other user data
+    };
+    fetchMock.mockResponseOnce(JSON.stringify(mockUsers));
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+    const expectedActions = [
+      { type: USER_SHOW, data: mockUsers }
+    ];
+    const store = mockStore({ users: [] });
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+    await store.dispatch(showUser());
+    const actions = store.getActions();
 
-### `npm run eject`
+    expect(actions[0].data[0].id).toEqual(expectedActions[0].data.id);
+  });
+});
+2. Testing API Error Handling (showUser)
+This test ensures that the showUser action correctly handles API errors by throwing an error when the API call fails.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+The mock fetch request is set up to reject with an error.
+The test verifies that the dispatched action throws the expected error.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+describe('showUser', () => {
+  it('throws an error when the API call fails', async () => {
+    fetchMock.mockRejectOnce(new Error('!Error in Api'));
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+    const store = mockStore({});
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+    await expect(store.dispatch(showUser())).rejects.toThrow('!Error in Api');
+  });
+});
 
-## Learn More
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+3. Testing Deleting a User (deleteUser)
+This test checks if the deleteUser action correctly dispatches the DELETE_USER action with the provided email.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+The action is dispatched with a sample email.
+The expected action with the email data is compared against the actual dispatched actions.
 
-### Code Splitting
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+describe('deleteUser', () => {
+  it('creates DELETE_USER when deleting a user by email', () => {
+    const email = 'Shanna@melissa.tv.com';
+    const expectedActions = [
+      { type: DELETE_USER, data: email }
+    ];
+    const store = mockStore({ users: [] });
 
-### Analyzing the Bundle Size
+    store.dispatch(deleteUser(email));
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+    expect(store.getActions()).toEqual(expectedActions);
+  });
+});
