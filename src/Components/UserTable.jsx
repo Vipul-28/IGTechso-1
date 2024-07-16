@@ -1,6 +1,6 @@
 import { Button } from '@material-tailwind/react'
 import React from 'react'
-import { deleteUser } from './Store/Action/UserAction';
+import { deleteUser } from '../Store/Action/UserAction';
 import { useDispatch } from 'react-redux';
 
 const UserTable = ({data}) => {

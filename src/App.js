@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { showUSer } from './Store/Action/UserAction';
-import UserTable from './UserTable';
 import Loader from './Components/Loader';
+import UserTable from './Components/UserTable';
 const App = () => {
   const datas=useSelector((state)=>state.UserReducer)
   const [data,setData]=useState(datas?.USER_DATA);
